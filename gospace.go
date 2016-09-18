@@ -12,43 +12,29 @@ import (
 	"fmt"
 	"os"
 	"path"
-	"path/filepath"
 )
 
 func main() {
-	const outfile string = "activate"
-
-	var wspace string
-	if len(os.Args) == 2 {
-		wspace = os.Args[1]
-	}
-
-	if wspace == "" {
-		fmt.Fprintf(os.Stderr, "Usage: %s <workspace_dir>\n", filepath.Base(os.Args[0]))
-		os.Exit(1)
-	}
-
-	if fi, err := os.Stat(wspace); os.IsNotExist(err) || !fi.IsDir() {
-		fmt.Fprintf(os.Stderr, "Invalid Workspace: '%s'\n", wspace)
-		os.Exit(1)
-	}
-
-	if path, err := filepath.Abs(wspace); err != nil {
-		panic(err)
-	} else {
-		wspace = path
-	}
-
-	destFile, err := os.Create(path.Join(wspace, outfile))
+	workingDir, err := os.Getwd()
 	if err != nil {
 		panic(err)
 	}
-	defer destFile.Close()  // TODO: consider deletion of this line
 
-	_, err = fmt.Fprintf(destFile, template, wspace)
+	destFile, err := os.Create(path.Join(workingDir, "activate"))
 	if err != nil {
 		panic(err)
 	}
+	defer destFile.Close() // TODO: consider deletion of this line
+
+	_, err = fmt.Fprintf(destFile, template)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(`You're ready to go.
+
+- Type 'source activate' jump into your new workspace
+- Type 'deactivate' to step out`)
 }
 
 // Original: https://github.com/pypa/virtualenv/tree/develop/virtualenv_embedded
@@ -92,7 +78,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-WORKSPACE="%s"
+WORKSPACE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 export WORKSPACE
 
 _OLD_GOPATH="$GOPATH"
