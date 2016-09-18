@@ -33,4 +33,4 @@ $ echo $GOPATH
 
 ## Note
 - The `activate` script should be placed in your workspace root (aka the folder containig `src/ bin/ pkg/`)
-- You can commit the `activate` script since it's not bound to any specific path
+- You can commit the `activate` script since it's not bound to any absolute path
